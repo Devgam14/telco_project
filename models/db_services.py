@@ -1,4 +1,4 @@
-from db import db as db
+from models.db import db
 class UserService:
     @staticmethod
     def create_user(username, password, phone_number, role="customer"):
@@ -50,15 +50,35 @@ class OrderService:
 class TransactionService:
 
     @staticmethod
-    def create_transaction(order_id, amount):
-        return db.transaction.insert(
+    def create_transaction(order_id, amount, user_phone):
+        """
+        Creates a new transaction record linked to a specific user phone.
+        """
+        # We add user_phone here so the Admin can search for it later
+        new_id = db.transaction.insert(
             order_id=order_id,
-            amount=amount
+            amount=amount,
+            user_phone=user_phone,
+            status="pending" # Defaulting to pending is safer
         )
+        db.commit()
+        return new_id
 
     @staticmethod
     def update_status(transaction_id, status):
-        db(db.transaction.id == transaction_id).update(status=status)
+        """
+        Updates the status (success/failed) of a transaction.
+        """
+        # IS_IN_SET validation usually happens at the form level, 
+        # but we do a quick check here for safety.
+        valid_statuses = ["pending", "success", "failed"]
+        if status not in valid_statuses:
+            print(f"⚠️ Invalid status: {status}")
+            return False
+
+        updated = db(db.transaction.id == transaction_id).update(status=status)
+        db.commit()
+        return updated
 class TopupService:
 
     @staticmethod

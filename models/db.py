@@ -1,6 +1,6 @@
 from pydal import DAL , Field 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pydal.validators import IS_IN_SET
 folder_path = 'db'
 
@@ -10,19 +10,6 @@ if not os.path.exists(folder_path):
 
 # Pass the folder path as a separate argument
 db = DAL('sqlite://telco.db', folder=folder_path)
-
-
-# id PK
-# int
-# name
-# string
-# size_mb
-# double (MB)
-# duration_type
-# "daily"|"weekly"|"monthly"
-# price
-# double (₦)
-# is_active
 db.define_table(
     "user",
     Field("username", "string", length=100, unique=True),
@@ -30,7 +17,7 @@ db.define_table(
     Field("phone_number", "string", unique=True),
     Field("role", "string", default="customer", requires=IS_IN_SET(["customer", "admin"])),
     Field("wallet_balance", "double", default=0.0),
-    Field("created_at", "datetime", default=datetime.utcnow)
+    Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
 db.define_table(
     "bundle",
@@ -47,7 +34,7 @@ db.define_table(
     Field("recipient_phone", "string"),
     Field("status", "string", default="pending",
           requires=IS_IN_SET(["pending", "completed", "failed"])),
-    Field("ordered_at", "datetime", default=datetime.utcnow)
+    Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
 db.define_table(
     "transaction",
@@ -55,9 +42,10 @@ db.define_table(
     Field("amount", "double"),
     Field("payment_method", "string", default="wallet",
           requires=IS_IN_SET(["wallet"])),
+    Field("user_phone", "string"),
     Field("status", "string", default="pending",
           requires=IS_IN_SET(["pending", "success", "failed"])),
-    Field("created_at", "datetime", default=datetime.utcnow)
+    Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
 db.define_table(
     "topup",
@@ -66,5 +54,5 @@ db.define_table(
     Field("reference", "string", unique=True),
     Field("status", "string", default="success",
           requires=IS_IN_SET(["success", "pending", "failed"])),
-    Field("created_at", "datetime", default=datetime.utc)
+    Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
