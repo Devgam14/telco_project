@@ -1,7 +1,15 @@
 from pydal import DAL , Field 
+import os
 from datetime import datetime
 from pydal.validators import IS_IN_SET
-db = DAL('sqlite://db/telco.db')
+folder_path = 'db'
+
+# Pro-tip: Always ensure the directory exists before initializing
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
+# Pass the folder path as a separate argument
+db = DAL('sqlite://telco.db', folder=folder_path)
 
 
 # id PK
@@ -58,5 +66,5 @@ db.define_table(
     Field("reference", "string", unique=True),
     Field("status", "string", default="success",
           requires=IS_IN_SET(["success", "pending", "failed"])),
-    Field("created_at", "datetime", default=datetime.utcnow)
+    Field("created_at", "datetime", default=datetime.utc)
 )

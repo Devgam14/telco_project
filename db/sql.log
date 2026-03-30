@@ -1,0 +1,41 @@
+timestamp: 2026-03-29T22:48:26.800016
+CREATE TABLE "user"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "username" CHAR(100) UNIQUE,
+    "password" CHAR(512),
+    "phone_number" CHAR(512) UNIQUE,
+    "role" CHAR(512),
+    "wallet_balance" DOUBLE,
+    "created_at" TIMESTAMP
+);
+success!
+timestamp: 2026-03-29T22:48:26.855922
+CREATE TABLE "bundle"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "size_mb" DOUBLE,
+    "duration_type" CHAR(512),
+    "price" DOUBLE,
+    "is_active" CHAR(1)
+);
+success!
+timestamp: 2026-03-29T22:48:26.901772
+CREATE TABLE "order"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "user_id" INTEGER REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "bundle_id" INTEGER REFERENCES "bundle" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "recipient_phone" CHAR(512),
+    "status" CHAR(512),
+    "ordered_at" TIMESTAMP
+);
+success!
+timestamp: 2026-03-29T22:48:26.948668
+CREATE TABLE "transaction"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "order_id" INTEGER REFERENCES "order" ("id") ON DELETE CASCADE ON UPDATE CASCADE   UNIQUE,
+    "amount" DOUBLE,
+    "payment_method" CHAR(512),
+    "status" CHAR(512),
+    "created_at" TIMESTAMP
+);
+success!
