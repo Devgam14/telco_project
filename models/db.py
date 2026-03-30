@@ -38,13 +38,11 @@ db.define_table(
 )
 db.define_table(
     "transaction",
-    Field("order_id", "reference order", unique=True),  # one-to-one
+    Field("order_id", "string"),
+    Field("user_phone", "string"), 
     Field("amount", "double"),
-    Field("payment_method", "string", default="wallet",
-          requires=IS_IN_SET(["wallet"])),
-    Field("user_phone", "string"),
-    Field("status", "string", default="pending",
-          requires=IS_IN_SET(["pending", "success", "failed"])),
+    Field("payment_method", "string", default="wallet"),
+    Field("status", "string", default="pending"),
     Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
 db.define_table(
