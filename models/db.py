@@ -54,3 +54,63 @@ db.define_table(
           requires=IS_IN_SET(["success", "pending", "failed"])),
     Field("created_at", "datetime", default=lambda: datetime.now(timezone.utc))
 )
+import hashlib
+
+def hash_password(p):
+    return hashlib.sha256(p.encode()).hexdigest()
+
+
+def seed_data(db):
+    """
+    Seeds initial users and bundles.
+    Safe to run multiple times (no duplicates).
+    """
+
+    # ── USERS ────────────────────────────────────────────
+    users = [
+        dict(
+            username="admin1",
+            password=hash_password("admin123"),
+            phone_number="08000000001",
+            role="admin",
+            wallet_balance=0.0
+        ),
+        dict(
+            username="admin2",
+            password=hash_password("admin123"),
+            phone_number="08000000002",
+            role="admin",
+            wallet_balance=0.0
+        ),
+        dict(
+            username="user1",
+            password=hash_password("user123"),
+            phone_number="08000000003",
+            role="customer",
+            wallet_balance=500.0
+        ),
+    ]
+
+    for u in users:
+        exists = db(db.user.username == u["username"]).count()
+        if not exists:
+            db.user.insert(**u)
+            print(f"✅ Created user: {u['username']}")
+
+    # ── BUNDLES ──────────────────────────────────────────
+    bundles = [
+        dict(name="Daily 500MB", size_mb=500, duration_type="daily", price=100),
+        dict(name="Daily 1GB", size_mb=1000, duration_type="daily", price=200),
+        dict(name="Weekly 2GB", size_mb=2000, duration_type="weekly", price=500),
+        dict(name="Weekly 5GB", size_mb=5000, duration_type="weekly", price=1200),
+        dict(name="Monthly 10GB", size_mb=10000, duration_type="monthly", price=2500),
+    ]
+
+    for b in bundles:
+        exists = db(db.bundle.name == b["name"]).count()
+        if not exists:
+            db.bundle.insert(**b)
+            print(f"✅ Added bundle: {b['name']}")
+
+    db.commit()
+seed_data(db)

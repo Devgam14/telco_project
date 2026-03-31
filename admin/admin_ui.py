@@ -13,10 +13,10 @@ class Utils:
             os.system('clear')
 
     @staticmethod
-    def header():
+    def header(value : str):
         """A stylish header for the Admin Panel."""
         print("="*50)
-        print("       🚀 DATA VEND - ADMIN CONTROL PANEL       ")
+        print(f"       🚀 DATA VEND - {value}       ")
         print("="*50)
 
 class AdminUI:
@@ -26,7 +26,7 @@ class AdminUI:
     def main_menu(self):
         while True:
             Utils.clear_screen()
-            Utils.header()
+            Utils.header("ADMIN CONTROL PANEL")
             print(f"Logged in as: {self.admin_name} (Admin)")
             print("-" * 50)
             

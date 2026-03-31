@@ -84,16 +84,15 @@ class Admin_services:
     @staticmethod
     def view_users() :
         table = PrettyTable()
-        table.field_names = ["ID", "Name", "Email", "Role", "Balance", "Time created"]
+        table.field_names = ["ID", "Name","Role", "Balance", "Time created"]
         rows = db(db.user).select() 
         for r in rows:
             table.add_row([
                 r.id, 
-                r.name, 
-                r.email, 
+                r.username, 
                 r.role,
-                f"₦{r.balance:,.2f}", 
-                r.created_on.strftime("%Y-%m-%d %H:%M") # Format the date nicely
+                f"₦{r.wallet_balance:,.2f}", 
+                r.created_at.strftime("%Y-%m-%d %H:%M") # Format the date nicely
             ])
         print(table)
     @staticmethod
