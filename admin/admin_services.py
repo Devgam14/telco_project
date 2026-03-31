@@ -7,8 +7,12 @@ class Admin_services:
     def view_transaction():
         table = PrettyTable()
         table.field_names = ["ID", "Order ID", "Amount (₦)", "Method", "Status", "Created At"]
+        
         rows = db(db.transaction).select()
+        total_profit = 0.0
+
         for row in rows:
+            # Visual display in the table
             table.add_row([
                 row.id,
                 row.order_id,
@@ -17,7 +21,20 @@ class Admin_services:
                 row.status,
                 row.created_at.strftime("%Y-%m-%d %H:%M")
             ])
+
+            # Accounting Logic
+            if row.status == "success":
+                if row.payment_method == "wallet":
+                    # This is money coming IN from a sale
+                    total_profit += row.amount
+                elif row.payment_method == "admin_deposit":
+                    # This is money the admin "removed" from the system profit to give away
+                    total_profit -= row.amount
+
         print(table)
+        print("-" * 30)
+        print(f"💰 NET SYSTEM PROFIT: ₦{total_profit:,.2f}")
+        print("-" * 30)
     @staticmethod
     def view_transaction_count():
         success_sum = db.transaction.amount.sum()
@@ -141,17 +158,35 @@ class Admin_services:
 
     @staticmethod
     def manual_deposit(phone_number, amount):
-        """Adds money to a user's balance via phone number"""
+        
         user = db(db.user.phone_number == phone_number).select().first()
         if not user:
-            print(f"User with phone {phone_number} not found.")
+            print(f"❌ User with phone {phone_number} not found.")
             return
 
-        new_balance = user.balance + float(amount)
-        db(db.user.phone == phone_number).update(balance=new_balance)
-        db.commit()
-
-        print(f"Deposit Successful! {user.name}'s new balance: ₦{new_balance:,.2f}")
+        try:
+            amount_val = float(amount)
+            new_balance = (user.wallet_balance or 0.0) + amount_val
+            
+            # 1. Update User Balance
+            db(db.user.phone_number == phone_number).update(wallet_balance=new_balance)
+            
+            # 2. Log to Transaction Table
+            db.transaction.insert(
+                order_id=f"ADM-FUND-{int(datetime.now().timestamp())}",
+                user_phone=phone_number,
+                amount=amount_val,
+                payment_method="admin_deposit", # CRITICAL: This label identifies the deduction
+                status="success",
+                created_at=datetime.now()
+            )
+            
+            db.commit()
+            print(f"✅ Deposit Successful! {user.username}'s new balance: ₦{new_balance:,.2f}")
+            
+        except Exception as e:
+            db.rollback()
+            print(f"❌ Error: {e}")
 
     @staticmethod
     def delete_record(table_name, record_id):

@@ -56,12 +56,39 @@ class AdminUI:
                 self.bundle_submenu()
                 
             elif choice == "4":
-                bid = int(input("Enter Bundle ID: "))
-                field = input("Field to change (price/name/size_mb): ")
-                val = input("Enter new value: ")
-                # Convert to float/int if necessary
-                if field in ['price', 'size_mb']: val = float(val)
-                Admin_services.edit_bundle_factory(bid, **{field: val})
+                try:
+                    # 1. Ask for ID and handle empty/invalid input
+                    bundle_input = input("Enter Bundle ID (or 'q' to cancel): ")
+                    if bundle_input.lower() == 'q' or not bundle_input:
+                        continue
+                        
+                    bid = int(bundle_input)
+
+                    # 2. Ask for the field
+                    field = input("Field to change (price/name/size_mb): ").strip().lower()
+                    if field not in ['price', 'name', 'size_mb']:
+                        print("❌ Invalid field choice.")
+                        continue
+
+                    # 3. Ask for the value
+                    val = input("Enter new value: ")
+                    
+                    # 4. Handle Type Conversion
+                    if field in ['price', 'size_mb']:
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            print("❌ Error: Price and Size must be numbers.")
+                            continue
+
+                    # 5. Call the service
+                    Admin_services.edit_bundle_factory(bid, **{field: val})
+                    print("✅ Bundle updated successfully!")
+
+                except ValueError:
+                    print("❌ Error: Bundle ID must be a number.")
+                except Exception as e:
+                    print(f"❌ Unexpected Error: {e}")
 
             elif choice == "5":
                 Admin_services.view_users()
